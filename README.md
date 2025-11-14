@@ -30,7 +30,7 @@ A modern web application for creating, managing, and testing device configuratio
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd ollyo-device-sanbox
+cd device-sandbox-simulator
 
 # Install PHP dependencies
 composer install
