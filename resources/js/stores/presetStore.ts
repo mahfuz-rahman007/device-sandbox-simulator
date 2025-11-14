@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Preset, Device } from '../types';
+import { useDeviceStore } from './deviceStore';
 
 interface PresetState {
     presets: Preset[];
@@ -53,6 +54,12 @@ export const usePresetStore = create<PresetState>((set) => ({
                 throw new Error('No device to save');
             }
 
+            // Get device_id from deviceStore
+            const deviceModel = useDeviceStore.getState().getDeviceByType(device.type);
+            if (!deviceModel) {
+                throw new Error(`Device type '${device.type}' not found`);
+            }
+
             const response = await fetch('/api/sandbox/presets', {
                 method: 'POST',
                 headers: {
@@ -62,7 +69,7 @@ export const usePresetStore = create<PresetState>((set) => ({
                 },
                 body: JSON.stringify({
                     name,
-                    type: device.type,
+                    device_id: deviceModel.id,
                     settings: device.settings,
                 }),
             });
@@ -94,6 +101,12 @@ export const usePresetStore = create<PresetState>((set) => ({
                 throw new Error('No device to save');
             }
 
+            // Get device_id from deviceStore
+            const deviceModel = useDeviceStore.getState().getDeviceByType(device.type);
+            if (!deviceModel) {
+                throw new Error(`Device type '${device.type}' not found`);
+            }
+
             const response = await fetch(`/api/sandbox/presets/${id}`, {
                 method: 'PUT',
                 headers: {
@@ -103,7 +116,7 @@ export const usePresetStore = create<PresetState>((set) => ({
                 },
                 body: JSON.stringify({
                     name: presetName,
-                    type: device.type,
+                    device_id: deviceModel.id,
                     settings: device.settings,
                 }),
             });

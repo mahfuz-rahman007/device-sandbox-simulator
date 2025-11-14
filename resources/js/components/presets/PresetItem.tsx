@@ -16,7 +16,7 @@ export const PresetItem: React.FC<PresetItemProps> = ({ preset }) => (
                 {preset.name}
             </div>
             <div className="text-xs capitalize text-slate-500">
-                {preset.configuration.type}
+                {preset.device?.name || preset.device?.type}
             </div>
         </div>
     </>

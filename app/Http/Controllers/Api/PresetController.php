@@ -14,7 +14,7 @@ class PresetController extends Controller
     public function index()
     {
         return response()->json([
-            'data' => Preset::all(),
+            'data' => Preset::with('device')->get(),
         ]);
     }
 
@@ -27,14 +27,12 @@ class PresetController extends Controller
 
         $preset = Preset::create([
             'name' => $validated['name'],
-            'configuration' => [
-                'type' => $validated['type'],
-                'settings' => $validated['settings'],
-            ],
+            'device_id' => $validated['device_id'],
+            'configuration' => $validated['settings'],
         ]);
 
         return response()->json([
-            'data' => $preset,
+            'data' => $preset->load('device'),
         ], 201);
     }
 
@@ -47,14 +45,12 @@ class PresetController extends Controller
 
         $preset->update([
             'name' => $validated['name'],
-            'configuration' => [
-                'type' => $validated['type'],
-                'settings' => $validated['settings'],
-            ],
+            'device_id' => $validated['device_id'],
+            'configuration' => $validated['settings'],
         ]);
 
         return response()->json([
-            'data' => $preset,
+            'data' => $preset->load('device'),
         ]);
     }
 

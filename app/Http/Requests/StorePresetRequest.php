@@ -23,7 +23,7 @@ class StorePresetRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'type' => 'required|in:light,fan',
+            'device_id' => 'required|exists:devices,id',
             'settings' => 'required|array',
             'settings.power' => 'required|boolean',
 

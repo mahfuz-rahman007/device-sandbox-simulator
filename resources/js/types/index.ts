@@ -18,15 +18,20 @@ export interface FanSettings {
 // Union type for device settings
 export type DeviceSettings = LightSettings | FanSettings;
 
+// Device Model
+export interface DeviceModel {
+    id: number;
+    type: DeviceType;
+    name: string;
+    is_active: boolean;
+    settings: Record<string, any>;
+    created_at: string;
+    updated_at: string;
+}
+
 // Device Instance
 export interface Device {
     id: string;
-    type: DeviceType;
-    settings: DeviceSettings;
-}
-
-// Preset Configuration - stores a single device
-export interface PresetConfiguration {
     type: DeviceType;
     settings: DeviceSettings;
 }
@@ -35,7 +40,9 @@ export interface PresetConfiguration {
 export interface Preset {
     id: number;
     name: string;
-    configuration: PresetConfiguration;
+    device_id: number;
+    device: DeviceModel;
+    configuration: DeviceSettings;
     created_at: string;
     updated_at: string;
 }

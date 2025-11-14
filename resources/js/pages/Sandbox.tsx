@@ -16,6 +16,7 @@ import { Button } from '../components/ui';
 import { SavePresetDialog, ConfirmAddDeviceDialog, DeletePresetConfirmDialog } from '../components/dialogs';
 import { useCanvasStore } from '../stores/canvasStore';
 import { usePresetStore } from '../stores/presetStore';
+import { useDeviceStore } from '../stores/deviceStore';
 import { DeviceType } from '../types';
 
 export default function Sandbox() {
@@ -46,13 +47,17 @@ export default function Sandbox() {
     const updatePreset = usePresetStore((state) => state.updatePreset);
     const deletePreset = usePresetStore((state) => state.deletePreset);
 
+    // Device store
+    const fetchDevices = useDeviceStore((state) => state.fetchDevices);
+
     // Drag sensors
     const sensors = useSensors(
         useSensor(PointerSensor)
     );
 
-    // Fetch presets on mount
+    // Fetch devices and presets on mount
     useEffect(() => {
+        fetchDevices();
         fetchPresets();
     }, []);
 
@@ -87,9 +92,9 @@ export default function Sandbox() {
             if (data.preset) {
                 // Create device from preset configuration
                 const presetDevice = {
-                    id: `${data.preset.configuration.type}-preset-${data.presetId}`,
-                    type: data.preset.configuration.type,
-                    settings: data.preset.configuration.settings,
+                    id: `${data.preset.device.type}-preset-${data.presetId}`,
+                    type: data.preset.device.type,
+                    settings: data.preset.configuration,
                 };
                 setDevices([presetDevice]);
                 // Store the loaded preset ID for updates
