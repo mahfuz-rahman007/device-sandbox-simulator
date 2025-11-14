@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { DeviceModel, DeviceType } from '../types';
+import axiosInstance from '../config/axios';
 
 interface DeviceStore {
     devices: DeviceModel[];
@@ -19,11 +20,7 @@ export const useDeviceStore = create<DeviceStore>((set, get) => ({
     fetchDevices: async () => {
         set({ loading: true, error: null });
         try {
-            const response = await fetch('/api/sandbox/devices');
-            if (!response.ok) {
-                throw new Error('Failed to fetch devices');
-            }
-            const data = await response.json();
+            const { data } = await axiosInstance.get('/sandbox/devices');
             set({ devices: data.data });
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';

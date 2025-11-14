@@ -3,7 +3,7 @@ import React from 'react';
 type ButtonType = 'primary' | 'success' | 'danger' | 'info';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
     type?: ButtonType;
     size?: ButtonSize;
     children: React.ReactNode;
