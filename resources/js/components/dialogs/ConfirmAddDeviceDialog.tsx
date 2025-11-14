@@ -21,7 +21,7 @@ export const ConfirmAddDeviceDialog: React.FC<ConfirmAddDeviceDialogProps> = ({
 }) => {
     return (
         <Dialog open={open} title={title} description={message}>
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-wrap justify-end gap-2 md:gap-3">
                 <Button type="info" onClick={onCancel}>
                     Cancel
                 </Button>

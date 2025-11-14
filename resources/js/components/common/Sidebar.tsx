@@ -1,4 +1,5 @@
 import React from 'react';
+import { X } from 'lucide-react';
 import { Preset } from '../../types';
 import { DraggableItem, DEVICE_REGISTRY } from '../devices';
 import { PresetDraggable } from '../presets';
@@ -6,15 +7,39 @@ import { useDeviceStore } from '../../stores/deviceStore';
 
 interface SidebarProps {
     presets: Preset[];
+    isOpen?: boolean;
+    onClose?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ presets }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ presets, isOpen = true, onClose }) => {
     const devices = useDeviceStore((state) => state.devices);
 
     return (
-        <aside className="w-full lg:w-80 flex-shrink-0 overflow-y-auto border-r border-slate-700 bg-slate-800 px-6 py-8 max-h-screen">
+        <aside className={`
+            fixed lg:relative
+            inset-y-0 left-0
+            z-50 lg:z-auto
+            w-80
+            transform transition-transform duration-300 ease-in-out
+            ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            flex-shrink-0 overflow-y-auto
+            border-r border-slate-700 bg-slate-800
+            px-4 py-6 md:px-6 md:py-8
+            max-h-screen
+        `}>
+            {/* Close Button - Mobile only */}
+            {onClose && (
+                <button
+                    onClick={onClose}
+                    className="lg:hidden mb-4 rounded-lg p-2 hover:bg-slate-700 transition-colors float-right"
+                    title="Close sidebar"
+                >
+                    <X className="h-6 w-6 text-slate-300" />
+                </button>
+            )}
+
             {/* Devices Section */}
-            <div className="mb-8">
+            <div className="mb-8 clear-right">
                 <h2 className="mb-4 text-lg font-semibold text-slate-100">Devices</h2>
                 <div className="space-y-3">
                     {devices.map((device) => {

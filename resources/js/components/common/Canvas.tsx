@@ -31,12 +31,12 @@ export const Canvas: React.FC<CanvasProps> = ({
             }`}
         >
             {/* Canvas header */}
-            <div className="border-b border-slate-700 bg-slate-900 px-8 py-4">
-                <h1 className="text-2xl font-bold text-slate-100">Device Configuration</h1>
+            <div className="border-b border-slate-700 bg-slate-900 px-4 py-3 md:px-6 md:py-4 lg:px-8 lg:py-4">
+                <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-100">Device Configuration</h1>
             </div>
 
             {/* Canvas content area */}
-            <div className="flex flex-1 items-center justify-center p-8">
+            <div className="flex flex-1 items-center justify-center p-4 md:p-6 lg:p-8">
                 {devices.length === 0 ? (
                     /* Empty state */
                     <div className="bg-opacity-50 flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 bg-slate-900 py-20 transition-colors duration-200 hover:border-slate-500">

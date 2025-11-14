@@ -10,10 +10,10 @@ export const FanController: React.FC<FanControllerProps> = ({ settings, onSettin
     const { power, speed } = settings;
 
     return (
-        <div className="w-full max-w-sm rounded-lg border border-slate-600 bg-slate-800 p-6 shadow-lg">
+        <div className="w-full max-w-sm rounded-lg border border-slate-600 bg-slate-800 p-4 md:p-6 shadow-lg">
             {/* Power Toggle */}
-            <div className="mb-6 flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-200">Power</span>
+            <div className="mb-4 md:mb-6 flex items-center justify-between">
+                <span className="text-xs md:text-sm font-medium text-slate-200">Power</span>
                 <button
                     onClick={() =>
                         onSettingsChange({
@@ -35,8 +35,8 @@ export const FanController: React.FC<FanControllerProps> = ({ settings, onSettin
 
             {/* Speed Slider */}
             <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-200">Speed</span>
-                <span className="text-sm text-slate-400">{speed}%</span>
+                <span className="text-xs md:text-sm font-medium text-slate-200">Speed</span>
+                <span className="text-xs md:text-sm text-slate-400">{speed}%</span>
             </div>
             <input
                 type="range"

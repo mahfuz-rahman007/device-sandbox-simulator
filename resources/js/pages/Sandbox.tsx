@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Menu, X } from 'lucide-react';
 import {
     DndContext,
     DragEndEvent,
@@ -20,6 +21,7 @@ import { useDeviceStore } from '../stores/deviceStore';
 import { DeviceType } from '../types';
 
 export default function Sandbox() {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showSaveDialog, setShowSaveDialog] = useState(false);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [confirmDialogType, setConfirmDialogType] = useState<'add-device' | 'remove-device'>('add-device');
@@ -64,6 +66,7 @@ export default function Sandbox() {
     // Handle drag start
     const handleDragStart = (event: DragStartEvent) => {
         setActiveItem(event.active);
+        setSidebarOpen(false);
     };
 
     // Handle drag end
@@ -195,12 +198,26 @@ export default function Sandbox() {
     return (
         <div className="flex h-screen w-screen flex-col bg-slate-900 text-slate-100">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-700 bg-slate-800 px-8 py-4">
-                <div>
-                    <h1 className="text-3xl font-bold">Device Sandbox Simulator</h1>
-                    <p className="mt-1 text-sm text-slate-400">Drag and drop devices to configure your setup</p>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 bg-slate-800 px-4 py-3 md:px-6 md:py-4 lg:px-8 lg:py-4">
+                <div className="flex items-center gap-3">
+                    {/* Hamburger Menu - Mobile only */}
+                    <button
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className="lg:hidden rounded-lg p-2 hover:bg-slate-700 transition-colors"
+                        title="Toggle sidebar"
+                    >
+                        {sidebarOpen ? (
+                            <X className="h-6 w-6 text-slate-300" />
+                        ) : (
+                            <Menu className="h-6 w-6 text-slate-300" />
+                        )}
+                    </button>
+                    <div>
+                        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">Device Sandbox Simulator</h1>
+                        <p className="hidden md:block mt-1 text-xs md:text-sm text-slate-400">Drag and drop devices to configure your setup</p>
+                    </div>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-2 md:gap-3">
                     {/* Show buttons only if devices exist */}
                     {devices.length > 0 && (
                         <>
@@ -251,11 +268,23 @@ export default function Sandbox() {
                 </div>
             </div>
 
+            {/* Mobile Sidebar Backdrop */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* Main content */}
             <div className="flex flex-1 overflow-hidden">
                 <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                     {/* Sidebar */}
-                    <Sidebar presets={presets} />
+                    <Sidebar
+                        presets={presets}
+                        isOpen={sidebarOpen}
+                        onClose={() => setSidebarOpen(false)}
+                    />
 
                     {/* Canvas */}
                     <Canvas

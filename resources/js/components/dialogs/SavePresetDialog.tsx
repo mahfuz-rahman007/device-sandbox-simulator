@@ -25,10 +25,10 @@ export const SavePresetDialog: React.FC<SavePresetDialogProps> = ({
                 value={presetName}
                 onChange={(e) => onPresetNameChange(e.target.value)}
                 autoFocus
-                className="mb-6 w-full rounded-lg border border-slate-600 bg-slate-900 px-4 py-2 text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                className="mb-4 md:mb-6 w-full rounded-lg border border-slate-600 bg-slate-900 px-3 md:px-4 py-2 text-sm md:text-base text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
             />
 
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-wrap justify-end gap-2 md:gap-3">
                 <Button type="info" onClick={onCancel}>
                     Cancel
                 </Button>

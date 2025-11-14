@@ -19,7 +19,7 @@ export const DeletePresetConfirmDialog: React.FC<DeletePresetConfirmDialogProps>
             title="Delete Preset?"
             description="This action cannot be undone. Are you sure you want to delete this preset?"
         >
-            <div className="flex gap-3 justify-end">
+            <div className="flex flex-wrap gap-2 md:gap-3 justify-end">
                 <Button type="info" onClick={onCancel}>
                     Cancel
                 </Button>
