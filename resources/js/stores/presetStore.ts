@@ -67,8 +67,9 @@ export const usePresetStore = create<PresetState>((set) => ({
             const { data } = await axiosInstance.get('/sandbox/presets');
             set({ presets: data.data, loading: false });
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to save preset';
             set({
-                error: error instanceof Error ? error.message : 'Unknown error',
+                error: errorMessage,
                 loading: false,
             });
             throw error;
@@ -81,7 +82,7 @@ export const usePresetStore = create<PresetState>((set) => ({
             // Get the first (and only) device
             const device = devices[0];
             if (!device) {
-                throw new Error('No device to save');
+                throw new Error('No device to update');
             }
 
             // Get device_id from deviceStore
@@ -100,8 +101,9 @@ export const usePresetStore = create<PresetState>((set) => ({
             const { data } = await axiosInstance.get('/sandbox/presets');
             set({ presets: data.data, loading: false });
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to update preset';
             set({
-                error: error instanceof Error ? error.message : 'Unknown error',
+                error: errorMessage,
                 loading: false,
             });
             throw error;
@@ -117,8 +119,9 @@ export const usePresetStore = create<PresetState>((set) => ({
             const { data } = await axiosInstance.get('/sandbox/presets');
             set({ presets: data.data, loading: false });
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to delete preset';
             set({
-                error: error instanceof Error ? error.message : 'Unknown error',
+                error: errorMessage,
                 loading: false,
             });
             throw error;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Device;
+use Exception;
 
 class DeviceController extends Controller
 {
@@ -12,10 +13,13 @@ class DeviceController extends Controller
      */
     public function index()
     {
-        $devices = Device::active()->get();
+        try {
+            $devices = Device::active()->get();
 
-        return response()->json([
-            'data' => $devices,
-        ]);
+            return response()->json(['data' => $devices]);
+        } catch (Exception $e) {
+            info($e->getMessage());
+            return response()->json(['message' => 'Failed to fetch devices'], 500);
+        }
     }
 }

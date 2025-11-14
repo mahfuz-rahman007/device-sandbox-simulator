@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const instance = axios.create({
   baseURL: '/api',
@@ -16,5 +16,20 @@ instance.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Handle errors globally
+instance.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError<any>) => {
+    const message = error.response?.data?.message ||
+                    error.response?.statusText ||
+                    error.message ||
+                    'An error occurred';
+
+    // Create a new error with a better message
+    const enhancedError = new Error(message);
+    return Promise.reject(enhancedError);
+  }
+);
 
 export default instance;

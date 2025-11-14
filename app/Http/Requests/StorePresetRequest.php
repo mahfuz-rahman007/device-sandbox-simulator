@@ -35,4 +35,27 @@ class StorePresetRequest extends FormRequest
             'settings.speed' => 'integer|min:0|max:100',
         ];
     }
+
+    /**
+     * Get custom messages for validation errors
+     */
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Preset name is required',
+            'name.max' => 'Preset name must not exceed 255 characters',
+            'device_id.required' => 'Device is required',
+            'device_id.exists' => 'Selected device does not exist',
+            'settings.required' => 'Device settings are required',
+            'settings.power.required' => 'Power setting is required',
+            'settings.power.boolean' => 'Power setting must be a boolean value',
+            'settings.brightness.integer' => 'Brightness must be a number',
+            'settings.brightness.min' => 'Brightness must be at least 0',
+            'settings.brightness.max' => 'Brightness must not exceed 100',
+            'settings.colorTemp.in' => 'Invalid color temperature selected',
+            'settings.speed.integer' => 'Fan speed must be a number',
+            'settings.speed.min' => 'Fan speed must be at least 0',
+            'settings.speed.max' => 'Fan speed must not exceed 100',
+        ];
+    }
 }

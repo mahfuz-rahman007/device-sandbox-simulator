@@ -141,7 +141,8 @@ export default function Sandbox() {
             toast.success(`Preset "${presetName}" updated successfully!`);
             // Refetch presets will happen automatically in the store
         } catch (error) {
-            toast.error('Failed to update preset');
+            const errorMessage = error instanceof Error ? error.message : 'Failed to update preset';
+            toast.error(errorMessage);
         }
     };
 
@@ -162,7 +163,8 @@ export default function Sandbox() {
             toast.success(`Preset "${presetName}" saved successfully!`);
             // Refetch presets will happen automatically in the store
         } catch (error) {
-            toast.error('Failed to save preset');
+            const errorMessage = error instanceof Error ? error.message : 'Failed to save preset';
+            toast.error(errorMessage);
         }
     };
 
@@ -191,7 +193,8 @@ export default function Sandbox() {
                 setLoadedPresetId(null);
             }
         } catch (error) {
-            toast.error('Failed to delete preset');
+            const errorMessage = error instanceof Error ? error.message : 'Failed to delete preset';
+            toast.error(errorMessage);
         }
     };
 

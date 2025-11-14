@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Exception;
 use App\Models\Preset;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePresetRequest;
 
 class PresetController extends Controller
@@ -13,9 +15,12 @@ class PresetController extends Controller
      */
     public function index()
     {
-        return response()->json([
-            'data' => Preset::with('device')->latest()->get(),
-        ]);
+        try {
+            return response()->json(['data' => Preset::with('device')->latest()->get()]);
+        } catch (Exception $e) {
+            info($e->getMessage());
+            return response()->json(['message' => 'Failed to fetch presets'], 500);
+        }
     }
 
     /**
@@ -23,17 +28,24 @@ class PresetController extends Controller
      */
     public function store(StorePresetRequest $request)
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        $preset = Preset::create([
-            'name' => $validated['name'],
-            'device_id' => $validated['device_id'],
-            'configuration' => $validated['settings'],
-        ]);
+            DB::beginTransaction();
+            $preset = Preset::create([
+                'name' => $validated['name'],
+                'device_id' => $validated['device_id'],
+                'configuration' => $validated['settings'],
+            ]);
+            DB::commit();
 
-        return response()->json([
-            'data' => $preset->load('device'),
-        ], 201);
+            return response()->json(['data' => $preset->load('device')], 201);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            info($e->getMessage());
+            return response()->json(['message' => 'Failed to save preset'], 500);
+        }
     }
 
     /**
@@ -41,17 +53,23 @@ class PresetController extends Controller
      */
     public function update(Preset $preset, StorePresetRequest $request)
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        $preset->update([
-            'name' => $validated['name'],
-            'device_id' => $validated['device_id'],
-            'configuration' => $validated['settings'],
-        ]);
+            DB::beginTransaction();
+            $preset->update([
+                'name' => $validated['name'],
+                'device_id' => $validated['device_id'],
+                'configuration' => $validated['settings'],
+            ]);
+            DB::commit();
 
-        return response()->json([
-            'data' => $preset->load('device'),
-        ]);
+            return response()->json(['data' => $preset->load('device')]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            info($e->getMessage());
+            return response()->json(['message' => 'Failed to update preset'], 500);
+        }
     }
 
     /**
@@ -59,10 +77,17 @@ class PresetController extends Controller
      */
     public function destroy(Preset $preset)
     {
-        $preset->delete();
+        try {
+            DB::beginTransaction();
+            $preset->delete();
+            DB::commit();
 
-        return response()->json([
-            'message' => 'Preset deleted successfully',
-        ]);
+            return response()->json(['message' => 'Preset deleted successfully']);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            info($e->getMessage());
+            return response()->json(['message' => 'Failed to delete preset'], 500);
+        }
     }
 }
