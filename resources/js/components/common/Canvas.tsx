@@ -1,20 +1,23 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { Device, DeviceType, DeviceSettings } from '../../types';
-import { DeviceWrapper } from '../devices/DeviceWrapper';
+import { CanvasDevice } from './CanvasDevice';
 
 interface CanvasProps {
     devices: Device[];
+    isModified: boolean;
     onAddDevice: (type: DeviceType) => void;
     onSettingsChange: (id: string, settings: DeviceSettings) => void;
     onRemoveDevice: (id: string) => void;
+    onRemoveDeviceWithConfirm: (id: string) => void;
 }
 
 export const Canvas: React.FC<CanvasProps> = ({
     devices,
-    onAddDevice,
+    isModified,
     onSettingsChange,
     onRemoveDevice,
+    onRemoveDeviceWithConfirm,
 }) => {
     const { setNodeRef, isOver } = useDroppable({
         id: 'canvas-droppable',
@@ -23,10 +26,8 @@ export const Canvas: React.FC<CanvasProps> = ({
     return (
         <div
             ref={setNodeRef}
-            className={`flex-1 flex flex-col rounded-lg border-2 transition-all duration-200 ${
-                isOver
-                    ? 'border-blue-500 bg-slate-900 bg-opacity-50'
-                    : 'border-slate-700 bg-slate-900'
+            className={`flex flex-1 flex-col rounded-lg border-2 border-slate-700 bg-slate-900 transition-all duration-200 ${
+                isOver ? 'opacity-30' : 'opacity-100'
             }`}
         >
             {/* Canvas header */}
@@ -35,31 +36,40 @@ export const Canvas: React.FC<CanvasProps> = ({
             </div>
 
             {/* Canvas content area */}
-            <div className="flex-1 flex items-center justify-center p-8">
+            <div className="flex flex-1 items-center justify-center p-8">
                 {devices.length === 0 ? (
                     /* Empty state */
-                    <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 bg-slate-900 bg-opacity-50 py-20 w-full h-full">
+                    <div className="bg-opacity-50 flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 bg-slate-900 py-20 transition-colors duration-200 hover:border-slate-500">
                         <div className="text-center">
-                            <div className="text-4xl mb-4">🎯</div>
-                            <h2 className="text-lg font-semibold text-slate-300 mb-2">
-                                No Devices Added Yet
-                            </h2>
-                            <p className="text-sm text-slate-500 mb-4">
-                                Drag a Light or Fan from the sidebar to add it to the canvas
-                            </p>
-                            <p className="text-sm text-slate-500">
-                                Or drag a saved preset to restore its configuration
-                            </p>
+                            <div className="mb-4 animate-bounce text-5xl">🎯</div>
+                            <h2 className="mb-3 text-xl font-semibold text-slate-200">Drop Your Devices Here</h2>
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                                    <span>💡</span>
+                                    <p>
+                                        Drag a <span className="font-medium text-slate-300">Light</span> or{' '}
+                                        <span className="font-medium text-slate-300">Fan</span> from the sidebar
+                                    </p>
+                                </div>
+                                <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                                    <span>📦</span>
+                                    <p>
+                                        Or drag a <span className="font-medium text-slate-300">saved preset</span> to restore
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 ) : (
                     /* Device - fills the canvas */
                     devices.map((device) => (
-                        <DeviceWrapper
+                        <CanvasDevice
                             key={device.id}
                             device={device}
+                            isModified={isModified}
                             onSettingsChange={onSettingsChange}
                             onRemove={onRemoveDevice}
+                            onRemoveWithConfirm={onRemoveDeviceWithConfirm}
                         />
                     ))
                 )}

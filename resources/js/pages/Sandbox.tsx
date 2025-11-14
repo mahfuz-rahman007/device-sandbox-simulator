@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import {
     DndContext,
     DragEndEvent,
+    DragStartEvent,
     DragOverlay,
     PointerSensor,
     useSensor,
@@ -10,6 +11,8 @@ import {
 } from '@dnd-kit/core';
 import { Sidebar } from '../components/common/Sidebar';
 import { Canvas } from '../components/common/Canvas';
+import { DragPreview } from '../components/common/DragPreview';
+import { SavePresetDialog, ConfirmAddDeviceDialog, DeletePresetConfirmDialog } from '../components/dialogs';
 import { useCanvasStore } from '../stores/canvasStore';
 import { usePresetStore } from '../stores/presetStore';
 import { DeviceType } from '../types';
@@ -17,11 +20,14 @@ import { DeviceType } from '../types';
 export default function Sandbox() {
     const [showSaveDialog, setShowSaveDialog] = useState(false);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [confirmDialogType, setConfirmDialogType] = useState<'add-device' | 'remove-device'>('add-device');
     const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
     const [presetName, setPresetName] = useState('');
     const [pendingDeviceType, setPendingDeviceType] = useState<DeviceType | null>(null);
     const [pendingDeletePresetId, setPendingDeletePresetId] = useState<number | null>(null);
+    const [pendingRemoveDeviceId, setPendingRemoveDeviceId] = useState<string | null>(null);
     const [loadedPresetId, setLoadedPresetId] = useState<number | null>(null);
+    const [activeItem, setActiveItem] = useState<any>(null);
 
     // Canvas store
     const devices = useCanvasStore((state) => state.devices);
@@ -41,15 +47,18 @@ export default function Sandbox() {
 
     // Drag sensors
     const sensors = useSensors(
-        useSensor(PointerSensor, {
-            distance: 8,
-        })
+        useSensor(PointerSensor)
     );
 
     // Fetch presets on mount
     useEffect(() => {
         fetchPresets();
     }, []);
+
+    // Handle drag start
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveItem(event.active);
+    };
 
     // Handle drag end
     const handleDragEnd = async (event: DragEndEvent) => {
@@ -86,14 +95,27 @@ export default function Sandbox() {
                 setLoadedPresetId(data.presetId);
             }
         }
+
+        // Clear active item
+        setActiveItem(null);
     };
 
-    // Handle confirm adding new device (discard current changes)
+    // Handle confirm dialog (add device or remove device)
     const handleConfirmAddDevice = () => {
-        if (pendingDeviceType) {
-            addDevice(pendingDeviceType);
-            setPendingDeviceType(null);
-            setShowConfirmDialog(false);
+        if (confirmDialogType === 'add-device') {
+            if (pendingDeviceType) {
+                addDevice(pendingDeviceType);
+                setPendingDeviceType(null);
+                setShowConfirmDialog(false);
+                setConfirmDialogType('add-device');
+            }
+        } else if (confirmDialogType === 'remove-device') {
+            if (pendingRemoveDeviceId) {
+                removeDevice(pendingRemoveDeviceId);
+                setShowConfirmDialog(false);
+                setPendingRemoveDeviceId(null);
+                setConfirmDialogType('add-device');
+            }
         }
     };
 
@@ -140,6 +162,12 @@ export default function Sandbox() {
         setShowDeleteConfirmDialog(true);
     };
 
+    const handleRemoveDeviceWithConfirm = (deviceId: string) => {
+        setPendingRemoveDeviceId(deviceId);
+        setConfirmDialogType('remove-device');
+        setShowConfirmDialog(true);
+    };
+
     const handleConfirmDeletePreset = async () => {
         if (pendingDeletePresetId === null) return;
 
@@ -148,6 +176,11 @@ export default function Sandbox() {
             toast.success('Preset deleted successfully!');
             setShowDeleteConfirmDialog(false);
             setPendingDeletePresetId(null);
+            // Clear canvas and reset preset if the deleted preset was loaded
+            if (loadedPresetId === pendingDeletePresetId) {
+                clear();
+                setLoadedPresetId(null);
+            }
         } catch (error) {
             toast.error('Failed to delete preset');
         }
@@ -156,185 +189,138 @@ export default function Sandbox() {
     return (
         <div className="flex h-screen w-screen flex-col bg-slate-900 text-slate-100">
             {/* Header */}
-            <div className="border-b border-slate-700 bg-slate-800 px-8 py-4 flex items-center justify-between">
+            <div className="flex items-center justify-between border-b border-slate-700 bg-slate-800 px-8 py-4">
                 <div>
                     <h1 className="text-3xl font-bold">Device Sandbox Simulator</h1>
-                    <p className="mt-1 text-sm text-slate-400">
-                        Drag and drop devices to configure your setup
-                    </p>
+                    <p className="mt-1 text-sm text-slate-400">Drag and drop devices to configure your setup</p>
                 </div>
                 <div className="flex gap-3">
-                    <button
-                        onClick={() => {
-                            clear();
-                            setLoadedPresetId(null);
-                        }}
-                        disabled={!isModified}
-                        className={`rounded-lg px-6 py-2 font-medium transition-all duration-200 ${
-                            !isModified
-                                ? 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-50'
-                                : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
-                        }`}
-                    >
-                        Clear
-                    </button>
-                    {loadedPresetId ? (
-                        <button
-                            onClick={handleUpdatePreset}
-                            disabled={!isModified}
-                            className={`rounded-lg px-6 py-2 font-medium text-white transition-all duration-200 ${
-                                !isModified
-                                    ? 'bg-green-700 cursor-not-allowed opacity-50'
-                                    : 'bg-green-600 hover:bg-green-700'
-                            }`}
-                        >
-                            Update Preset
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => setShowSaveDialog(true)}
-                            disabled={!isModified}
-                            className={`rounded-lg px-6 py-2 font-medium text-white transition-all duration-200 ${
-                                !isModified
-                                    ? 'bg-blue-700 cursor-not-allowed opacity-50'
-                                    : 'bg-blue-600 hover:bg-blue-700'
-                            }`}
-                        >
-                            Save Preset
-                        </button>
+                    {/* Show buttons only if devices exist */}
+                    {devices.length > 0 && (
+                        <>
+                            {/* Clear Button - Always shown when devices exist */}
+                            <button
+                                onClick={() => {
+                                    clear();
+                                    setLoadedPresetId(null);
+                                }}
+                                className="cursor-pointer rounded-lg bg-slate-700 px-6 py-2 font-medium text-slate-200 transition-all duration-200 hover:bg-slate-600"
+                            >
+                                Clear
+                            </button>
+
+                            {/* Preset-specific buttons */}
+                            {loadedPresetId ? (
+                                <>
+                                    {/* Update Preset Button */}
+                                    <button
+                                        onClick={handleUpdatePreset}
+                                        disabled={!isModified}
+                                        className={`rounded-lg px-6 py-2 font-medium text-white transition-all duration-200 ${
+                                            !isModified
+                                                ? 'cursor-not-allowed bg-green-700 opacity-50'
+                                                : 'cursor-pointer bg-green-600 hover:bg-green-700'
+                                        }`}
+                                    >
+                                        Update Preset
+                                    </button>
+                                    {/* Delete Preset Button */}
+                                    <button
+                                        onClick={() => handleDeletePreset(loadedPresetId)}
+                                        className="cursor-pointer rounded-lg bg-red-600 px-6 py-2 font-medium text-white transition-all duration-200 hover:bg-red-700"
+                                    >
+                                        Delete Preset
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Save Preset Button - only when no preset is loaded */}
+                                    <button
+                                        onClick={() => setShowSaveDialog(true)}
+                                        disabled={!isModified}
+                                        className={`rounded-lg px-6 py-2 font-medium text-white transition-all duration-200 ${
+                                            !isModified ? 'cursor-not-allowed bg-blue-700 opacity-50' : 'cursor-pointer bg-blue-600 hover:bg-blue-700'
+                                        }`}
+                                    >
+                                        Save Preset
+                                    </button>
+                                </>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
 
             {/* Main content */}
             <div className="flex flex-1 overflow-hidden">
-                <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                     {/* Sidebar */}
-                    <Sidebar presets={presets} onDeletePreset={handleDeletePreset} />
+                    <Sidebar presets={presets} />
 
                     {/* Canvas */}
                     <Canvas
                         devices={devices}
+                        isModified={isModified}
                         onAddDevice={addDevice}
                         onSettingsChange={updateDevice}
                         onRemoveDevice={removeDevice}
+                        onRemoveDeviceWithConfirm={handleRemoveDeviceWithConfirm}
                     />
 
                     {/* Drag overlay - shows what's being dragged */}
                     <DragOverlay>
-                        {/* Optional: Add custom drag preview here */}
+                        {activeItem &&
+                            (() => {
+                                const data = activeItem.data?.current;
+
+                                if (!data) return null;
+
+                                switch (data.type) {
+                                    case 'device':
+                                        return <DragPreview type="device" deviceType={data.deviceType} />;
+                                    case 'preset':
+                                        return <DragPreview type="preset" preset={data.preset} />;
+                                    default:
+                                        return null;
+                                }
+                            })()}
                     </DragOverlay>
                 </DndContext>
             </div>
 
             {/* Save Preset Dialog */}
-            {showSaveDialog && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
-                    <div className="rounded-lg border border-slate-600 bg-slate-800 p-6 shadow-lg max-w-md w-full mx-4">
-                        <h2 className="text-xl font-semibold text-slate-100 mb-4">
-                            Save Preset Configuration
-                        </h2>
+            <SavePresetDialog
+                open={showSaveDialog}
+                presetName={presetName}
+                onPresetNameChange={setPresetName}
+                onSave={handleSavePreset}
+                onCancel={() => {
+                    setShowSaveDialog(false);
+                    setPresetName('');
+                }}
+            />
 
-                        <input
-                            type="text"
-                            placeholder="Enter preset name..."
-                            value={presetName}
-                            onChange={(e) => setPresetName(e.target.value)}
-                            onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleSavePreset();
-                                }
-                            }}
-                            autoFocus
-                            className="w-full rounded-lg border border-slate-600 bg-slate-900 px-4 py-2 text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none mb-6"
-                        />
-
-                        <div className="flex gap-3 justify-end">
-                            <button
-                                onClick={() => {
-                                    setShowSaveDialog(false);
-                                    setPresetName('');
-                                }}
-                                className="rounded-lg border border-slate-600 px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors duration-200"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSavePreset}
-                                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors duration-200"
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Confirm Add Device Dialog */}
-            {showConfirmDialog && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
-                    <div className="rounded-lg border border-slate-600 bg-slate-800 p-6 shadow-lg max-w-md w-full mx-4">
-                        <h2 className="text-xl font-semibold text-slate-100 mb-4">
-                            ⚠️ Discard Changes?
-                        </h2>
-
-                        <p className="text-slate-300 mb-6">
-                            You will lose your current device configuration and all unsaved changes if you proceed without saving as a preset first.
-                        </p>
-
-                        <div className="flex gap-3 justify-end">
-                            <button
-                                onClick={() => {
-                                    setShowConfirmDialog(false);
-                                    setPendingDeviceType(null);
-                                }}
-                                className="rounded-lg border border-slate-600 px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors duration-200"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleConfirmAddDevice}
-                                className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition-colors duration-200"
-                            >
-                                Discard & Continue
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Confirm Dialog (Add Device or Remove Device) */}
+            <ConfirmAddDeviceDialog
+                open={showConfirmDialog}
+                onConfirm={handleConfirmAddDevice}
+                onCancel={() => {
+                    setShowConfirmDialog(false);
+                    setPendingDeviceType(null);
+                    setPendingRemoveDeviceId(null);
+                    setConfirmDialogType('add-device');
+                }}
+            />
 
             {/* Delete Preset Confirmation Dialog */}
-            {showDeleteConfirmDialog && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
-                    <div className="rounded-lg border border-slate-600 bg-slate-800 p-6 shadow-lg max-w-md w-full mx-4">
-                        <h2 className="text-xl font-semibold text-slate-100 mb-4">
-                            Delete Preset?
-                        </h2>
-
-                        <p className="text-slate-300 mb-6">
-                            This action cannot be undone. Are you sure you want to delete this preset?
-                        </p>
-
-                        <div className="flex gap-3 justify-end">
-                            <button
-                                onClick={() => {
-                                    setShowDeleteConfirmDialog(false);
-                                    setPendingDeletePresetId(null);
-                                }}
-                                className="rounded-lg border border-slate-600 px-4 py-2 text-slate-200 hover:bg-slate-700 transition-colors duration-200"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleConfirmDeletePreset}
-                                className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition-colors duration-200"
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DeletePresetConfirmDialog
+                open={showDeleteConfirmDialog}
+                onConfirm={handleConfirmDeletePreset}
+                onCancel={() => {
+                    setShowDeleteConfirmDialog(false);
+                    setPendingDeletePresetId(null);
+                }}
+            />
         </div>
     );
 }

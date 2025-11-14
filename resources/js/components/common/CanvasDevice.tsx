@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
 import { Device, DeviceSettings } from '../../types';
-import { LightVisual } from './Light/LightVisual';
-import { LightController } from './Light/LightController';
-import { FanVisual } from './Fan/FanVisual';
-import { FanController } from './Fan/FanController';
+import { LightVisual } from '../devices/Light/LightVisual';
+import { LightController } from '../devices/Light/LightController';
+import { FanVisual } from '../devices/Fan/FanVisual';
+import { FanController } from '../devices/Fan/FanController';
 import { X } from 'lucide-react';
 
-interface DeviceWrapperProps {
+interface CanvasDeviceProps {
     device: Device;
+    isModified: boolean;
     onSettingsChange: (id: string, settings: DeviceSettings) => void;
     onRemove: (id: string) => void;
+    onRemoveWithConfirm: (id: string) => void;
 }
 
-export const DeviceWrapper: React.FC<DeviceWrapperProps> = ({
+export const CanvasDevice: React.FC<CanvasDeviceProps> = ({
     device,
+    isModified,
     onSettingsChange,
     onRemove,
+    onRemoveWithConfirm,
 }) => {
-    const [isExpanded, setIsExpanded] = useState(true);
 
     const handleSettingsChange = (newSettings: DeviceSettings) => {
         onSettingsChange(device.id, newSettings);
@@ -27,8 +30,8 @@ export const DeviceWrapper: React.FC<DeviceWrapperProps> = ({
         <div className="relative w-full h-full rounded-lg border border-slate-600 bg-slate-900 p-8 shadow-lg hover:border-slate-500 transition-colors duration-200 flex flex-col items-center justify-center gap-8">
             {/* Delete button - top right */}
             <button
-                onClick={() => onRemove(device.id)}
-                className="absolute top-4 right-4 rounded-md p-1 hover:bg-red-900 hover:bg-opacity-30 transition-colors duration-200"
+                onClick={() => isModified ? onRemoveWithConfirm(device.id) : onRemove(device.id)}
+                className="absolute top-4 right-4 rounded-md p-1 hover:bg-red-900 hover:bg-opacity-30 transition-colors duration-200 cursor-pointer"
                 title="Remove device"
             >
                 <X className="h-5 w-5 text-red-400" />
