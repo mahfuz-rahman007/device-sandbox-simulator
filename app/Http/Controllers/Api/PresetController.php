@@ -14,7 +14,7 @@ class PresetController extends Controller
     public function index()
     {
         return response()->json([
-            'data' => Preset::with('device')->get(),
+            'data' => Preset::with('device')->latest()->get(),
         ]);
     }
 
