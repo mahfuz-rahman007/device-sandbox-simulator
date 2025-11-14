@@ -12,6 +12,7 @@ import {
 import { Sidebar } from '../components/common/Sidebar';
 import { Canvas } from '../components/common/Canvas';
 import { DragPreview } from '../components/common/DragPreview';
+import { Button } from '../components/ui';
 import { SavePresetDialog, ConfirmAddDeviceDialog, DeletePresetConfirmDialog } from '../components/dialogs';
 import { useCanvasStore } from '../stores/canvasStore';
 import { usePresetStore } from '../stores/presetStore';
@@ -199,51 +200,45 @@ export default function Sandbox() {
                     {devices.length > 0 && (
                         <>
                             {/* Clear Button - Always shown when devices exist */}
-                            <button
+                            <Button
+                                type="info"
                                 onClick={() => {
                                     clear();
                                     setLoadedPresetId(null);
                                 }}
-                                className="cursor-pointer rounded-lg bg-slate-700 px-6 py-2 font-medium text-slate-200 transition-all duration-200 hover:bg-slate-600"
                             >
                                 Clear
-                            </button>
+                            </Button>
 
                             {/* Preset-specific buttons */}
                             {loadedPresetId ? (
                                 <>
                                     {/* Update Preset Button */}
-                                    <button
-                                        onClick={handleUpdatePreset}
+                                    <Button
+                                        type="success"
                                         disabled={!isModified}
-                                        className={`rounded-lg px-6 py-2 font-medium text-white transition-all duration-200 ${
-                                            !isModified
-                                                ? 'cursor-not-allowed bg-green-700 opacity-50'
-                                                : 'cursor-pointer bg-green-600 hover:bg-green-700'
-                                        }`}
+                                        onClick={handleUpdatePreset}
                                     >
                                         Update Preset
-                                    </button>
+                                    </Button>
                                     {/* Delete Preset Button */}
-                                    <button
+                                    <Button
+                                        type="danger"
                                         onClick={() => handleDeletePreset(loadedPresetId)}
-                                        className="cursor-pointer rounded-lg bg-red-600 px-6 py-2 font-medium text-white transition-all duration-200 hover:bg-red-700"
                                     >
                                         Delete Preset
-                                    </button>
+                                    </Button>
                                 </>
                             ) : (
                                 <>
                                     {/* Save Preset Button - only when no preset is loaded */}
-                                    <button
-                                        onClick={() => setShowSaveDialog(true)}
+                                    <Button
+                                        type="primary"
                                         disabled={!isModified}
-                                        className={`rounded-lg px-6 py-2 font-medium text-white transition-all duration-200 ${
-                                            !isModified ? 'cursor-not-allowed bg-blue-700 opacity-50' : 'cursor-pointer bg-blue-600 hover:bg-blue-700'
-                                        }`}
+                                        onClick={() => setShowSaveDialog(true)}
                                     >
                                         Save Preset
-                                    </button>
+                                    </Button>
                                 </>
                             )}
                         </>
