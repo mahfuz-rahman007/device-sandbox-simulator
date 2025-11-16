@@ -5,9 +5,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PresetController;
 use App\Http\Controllers\Api\DeviceController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
 
 // Sandbox API Routes
 Route::prefix('sandbox')->group(function () {
